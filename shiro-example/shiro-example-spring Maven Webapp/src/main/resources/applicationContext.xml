@@ -10,7 +10,7 @@
         <property name="cacheManager" ref="cacheManager"/>
     </bean>
 
-    <!--  
+    <!-- 
     2. 配置 CacheManager. 
     2.1 需要加入 ehcache 的 jar 包及配置文件. 
     -->     

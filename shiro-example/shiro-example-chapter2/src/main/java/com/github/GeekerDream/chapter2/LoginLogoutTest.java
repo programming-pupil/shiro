@@ -8,7 +8,9 @@ import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.Factory;
+import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.mgt.SecurityManager;
+import org.junit.After;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,9 @@ import org.slf4j.LoggerFactory;
 public class LoginLogoutTest {
 	private static final Logger log = LoggerFactory.getLogger(LoginLogoutTest.class);
 	
+	/**
+	 * helloworld
+	 */
 	@Test
 	public void testHelloWorld() {
 		//1、获取SecurityManager工厂，此处适用Ini配置文件初始化SecurityManager
@@ -54,4 +59,84 @@ public class LoginLogoutTest {
 		subject.logout();
 		System.out.println("-----2------登陆了吗？" + subject.isAuthenticated());
 	}
+	
+	/**
+	 * 测试单个Realm
+	 */
+	@Test
+	public void testSingleRealm() {
+		//实例化SecurityManager并绑定到SecurityUtils
+		Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro-single-realm.ini");
+		SecurityManager securityManager = factory.getInstance();
+		SecurityUtils.setSecurityManager(securityManager);
+		
+		//获取Subject
+		Subject subject = SecurityUtils.getSubject();
+		
+		UsernamePasswordToken token = new UsernamePasswordToken("chen", "123");
+		
+		try {
+			//登陆
+			subject.login(token);
+		} catch (AuthenticationException e) {
+			log.info("登陆失败：" + e);
+		}
+		//登出
+		subject.logout();
+	}
+	
+	/**
+	 * 测试多个Realm
+	 */
+	@Test
+	public void testMultiRealms() {
+		//实例化SecurityManager并绑定到SecurityUtils
+		Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro-multi-realm.ini");
+		SecurityManager securityManager = factory.getInstance();
+		SecurityUtils.setSecurityManager(securityManager);
+		
+		//获取Subject
+		Subject subject = SecurityUtils.getSubject();
+		
+		UsernamePasswordToken token = new UsernamePasswordToken("wei", "123");
+		
+		try {
+			//登陆
+			subject.login(token);
+		} catch (AuthenticationException e) {
+			log.info("登陆失败：" + e);
+		}
+		//登出
+		subject.logout();
+	}
+	
+	/**
+	 * 测试jdbcRealm
+	 */
+	@Test
+    public void testJDBCRealm() {
+		//实例化SecurityManager并绑定到SecurityUtils
+		Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro-jdbc-realm.ini");
+		SecurityManager securityManager = factory.getInstance();
+		SecurityUtils.setSecurityManager(securityManager);
+		
+		//获取Subject
+		Subject subject = SecurityUtils.getSubject();
+		
+		UsernamePasswordToken token = new UsernamePasswordToken("chen", "123");
+		
+		try {
+			//登陆
+			subject.login(token);
+		} catch (AuthenticationException e) {
+			log.info("登陆失败：" + e);
+		}
+		//登出
+		subject.logout();
+    }
+	
+	@After
+    public void tearDown() throws Exception {
+        ThreadContext.unbindSubject();//退出时请解除绑定Subject到线程 否则对下次测试造成影响
+    }
 }
